@@ -1,12 +1,4 @@
-Code for "On Losses for Modern Language Models" (ACL: https://www.aclweb.org/anthology/2020.emnlp-main.403/, arxiv: https://arxiv.org/abs/2010.01694)
-
-This repository is primarily for reproducibility and posterity. It is not maintained.
-
-Thank you to NVIDIA and NYU's jiant group for their code which helped create the base of this repo. Specifically
-https://github.com/NVIDIA/Megatron-LM/commits/master (commit 0399d32c75b4719c89b91c18a173d05936112036)  
-and  
-https://github.com/nyu-mll/jiant/commits/master (commit 14d9e3d294b6cb4a29b70325b2b993d5926fe668)  
-were used.
+Code for "Multi-CLS BERT: An Efficient Alternative to Traditional Ensembling" 
 
 # Setup
 Only tested on python3.6.
@@ -17,14 +9,6 @@ virtualenv bert_env
 source bert_env/bin/activate
 pip install -r requirements.txt
 ```
-
-# To do
-+olfmlm/evaluate/generate_random_number.py
-If I use bert-large-uncased tokenizer during the testing time, I will get assert failure on this line: assert (ids > 1).all()  in the file olfmlm/evaluate/bert_embedder.py. However, it seems to be fine if I use bert-base-uncased tokenizer for the bert-large-uncased model. I believe the tokenizer of bert-large-uncased and bert-base-uncased should do the same thing because their vocab file should be the same, but it seems that allennlp handle the bert-base-uncased and bert-large-uncased differently.
-It might be a bug in allennlp 0.8.4
-Before releasing the code, remember to change the num-workers to be None as default
-
-
 # Usage
 The code is built on the source code of [On Losses for Modern Language Models](https://github.com/StephAO/olfmlm) with several enhancements and modifications.
 In addition to previous proposed pre-training tasks ("mlm", "rg (QT) in the paper", "tf", "tf_idf", "so"...etc), we provide a new training mechanism for transformers which enjoys the benefits of ensembling
@@ -57,20 +41,20 @@ Before training, you should
 
 The following command is the best setting that we used our paper for Multi-Bert
 ```angular2html
-python -m olfmlm.pretrain_bert --model-type mf,tf_idf,so --pretrained-bert --save-iters 200000 --lr 2e-5 --agg-function max --warmup 0.001 --facet2facet  --epochs 2 --num-facets 5 --diversify_hidden_layer 4,8 --loss_mode log  --use_hard_neg 1 --batch-size 30 --seed 1 --diversify_mode lin_new --add_testing_agg --agg_weight 0.1 --save_suffix _add_testing_agg_max01_n5_no_pooling_no_bias_h48_lin_no_bias_hard_neg_tf_idf_so_bsz_30_e2_norm_facet_warmup0001_s1
+python -m pretrain_bert --model-type mf,tf_idf,so --pretrained-bert --save-iters 200000 --lr 2e-5 --agg-function max --warmup 0.001 --facet2facet  --epochs 2 --num-facets 5 --diversify_hidden_layer 4,8 --loss_mode log  --use_hard_neg 1 --batch-size 30 --seed 1 --diversify_mode lin_new --add_testing_agg --agg_weight 0.1 --save_suffix _add_testing_agg_max01_n5_no_pooling_no_bias_h48_lin_no_bias_hard_neg_tf_idf_so_bsz_30_e2_norm_facet_warmup0001_s1
 ```
 
 ## Fine-tuning
-Before running fine-tuning task, change `output_path` in `evaluate/generate_random_number.py` as well as `random_file_path` in `olfmlm/evaluate/config/test_bert.conf` to your local path. Run the python file to generate random number, which is to ensure the random seeds for training data sampling remain same while fine-tuning.
+Before running fine-tuning task, change `output_path` in `evaluate/generate_random_number.py` as well as `random_file_path` in `evaluate/config/test_bert.conf` to your local path. Run the python file to generate random number, which is to ensure the random seeds for training data sampling remain same while fine-tuning.
 
 To run fine-tuning task:
 You will need to convert the saved state dict of the required model using the `convert_state_dict.py` file.
 Then run:
-`python3 -m olfmlm.evaluate.main --exp_name [experiment name] --overrides parameters_to_Overide`
+`python3 -m evaluate.main --exp_name [experiment name] --overrides parameters_to_Overide`
 Where experiment name is the same as the model type above. If using a saved checkpoint instead of the best model, use the --checkpoint argument.
-You may change the data you want to use in `olfmlm/paths.py`, can be glue or super glue. As for the `--overrides`, this parameter accepts command like strings to override the default values in fine-tuning config (`olfmlm/evaluate/config/test_bert.conf`). You may specify learning rate, model_suffix or few shot setting there.
+You may change the data you want to use in `paths.py`, can be glue or super glue. As for the `--overrides`, this parameter accepts command like strings to override the default values in fine-tuning config (`evaluate/config/test_bert.conf`). You may specify learning rate, model_suffix or few shot setting there.
 
-In Multi-Bert, we provide different ways to aggregate all the CLS embeddings. To specify the aggregation function, change the value of `pool_type` in `olfmlm/evaluate/config/test_bert.conf`
+In Multi-Bert, we provide different ways to aggregate all the CLS embeddings. To specify the aggregation function, change the value of `pool_type` in `evaluate/config/test_bert.conf`
 - Re-parameterization `pool_type=proj_avg_train`
 - Sum Aggregation `pool_type=first_init`
 
@@ -80,7 +64,7 @@ The following command is an example to run fine-tuning task on Glue dataset with
 common_para="warmup_ratio = 0.1, max_grad_norm = 1.0, pool_type=proj_avg_train, "
 common_name="warmup01_clip1_proj_avg_train_correct"
 
-python -m olfmlm.evaluate.main 
+python -m evaluate.main 
 --exp_name $exp_name 
 --overrides "run_name = ${model_name}_1, 
 $common_para pretrain_tasks = glue}, 
