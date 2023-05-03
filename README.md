@@ -1,4 +1,4 @@
-Code for "Multi-CLS BERT: An Efficient Alternative to Traditional Ensembling" 
+Code for "[Multi-CLS BERT: An Efficient Alternative to Traditional Ensembling](https://arxiv.org/abs/2210.05043)"
 
 # Setup
 Only tested on python3.6.
@@ -74,5 +74,13 @@ pooler_dropout = 0, random_seed = 1,
 run_name_suffix = adam_${common_name}_e20_bsz4:s1:lr"
 ```
 
+## Citation
 
-
+```
+@inproceedings{chang2023multi-cls,
+  title={Multi-CLS BERT: An Efficient Alternative to Traditional Ensembling},
+  author={Haw-Shiuan Chang* and Ruei-Yao Sun* and Kathryn Ricci* and Andrew McCallum},
+  booktitle={Annual Meeting of the Association for Computational Linguistics (ACL)},
+  year={2023},
+}
+```
